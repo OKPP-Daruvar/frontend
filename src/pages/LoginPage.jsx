@@ -1,32 +1,48 @@
 import { Col, Form, Input, Flex, Button } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import { auth } from "../firebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const LoginPage = () => {
   const [isShowingPassword, setIsShowingPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const showPasswordHandler = () => {
     setIsShowingPassword(!isShowingPassword);
   };
 
-  const onFinish = (values) => {
-    console.log("Success:", values);
-    axiosInstance
-      .post("", {
-        email: values.email,
-        password: values.password,
-      })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const onFinish = async (values) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const user = userCredential.user;
+
+      const token = await user.getIdToken();
+      console.log("Token:", token);
+
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
+
+      console.log("Login Successful:", userCredential.user);
+      alert("Login Successful!");
+    } catch (err) {
+      console.error("Login Error:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
+    console.log("Validation Failed:", errorInfo);
   };
 
   return (
@@ -59,26 +75,29 @@ const LoginPage = () => {
                 message: "Password must be at least 8 characters long!",
               },
             ]}
-            type={isShowingPassword ? "text" : "password"}
-            suffix={
-              isShowingPassword ? (
-                <EyeOutlined
-                  onClick={showPasswordHandler}
-                  style={{ cursor: "pointer" }}
-                />
-              ) : (
-                <EyeInvisibleOutlined
-                  onClick={showPasswordHandler}
-                  style={{ cursor: "pointer" }}
-                />
-              )
-            }
           >
-            <Input.Password />
+            <Input.Password
+              type={isShowingPassword ? "text" : "password"}
+              iconRender={(visible) =>
+                visible ? (
+                  <EyeOutlined
+                    onClick={showPasswordHandler}
+                    style={{ cursor: "pointer" }}
+                  />
+                ) : (
+                  <EyeInvisibleOutlined
+                    onClick={showPasswordHandler}
+                    style={{ cursor: "pointer" }}
+                  />
+                )
+              }
+            />
           </Form.Item>
 
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
           <Form.Item label={null}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               Submit
             </Button>
           </Form.Item>
