@@ -3,11 +3,14 @@ import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { getErrorMessage } from "../firebaseAuthUtils";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [isShowingPassword, setIsShowingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setIsShowingPassword((prevState) => !prevState);
@@ -32,17 +35,17 @@ const LoginPage = () => {
       sessionStorage.setItem("token", token);
 
       console.log("Login Successful:", user);
-      alert("Login Successful!");
+      navigate("/");
     } catch (err) {
       console.error("Login Error:", err.message);
-      setError(err.message);
+      setError(getErrorMessage(err.code));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleValidationFailed = (errorInfo) => {
-    console.log("Validation Failed:", errorInfo);
+  const onFinishFailed = (errorInfo) => {
+    console.error("Failed:", errorInfo);
   };
 
   return (
@@ -50,17 +53,26 @@ const LoginPage = () => {
       <Col span={8}>
         <Card title="Login">
           <Form
-            style={{ margin: "auto" }}
             onFinish={handleLogin}
-            onFinishFailed={handleValidationFailed}
+            onFinishFailed={onFinishFailed}
             autoComplete="off"
+            wrapperCol={{ span: 18 }}
+            labelCol={{ span: 6 }}
+            labelAlign="left"
+            colon={false}
+            requiredMark={false}
           >
             {error && (
               <Alert
                 type="error"
-                message={error}
+                description={error}
                 showIcon
-                style={{ marginBottom: "16px" }}
+                closable
+                style={{
+                  marginBottom: "16px",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
               />
             )}
 
@@ -104,9 +116,9 @@ const LoginPage = () => {
               />
             </Form.Item>
 
-            <Form.Item>
+            <Form.Item wrapperCol={{ span: 24 }} style={{ marginBottom: 0 }}>
               <Button type="primary" htmlType="submit" block loading={loading}>
-                Submit
+                Login
               </Button>
             </Form.Item>
           </Form>
