@@ -398,13 +398,7 @@ const CreateSurveyPage = () => {
   };
 
   return (
-    <Flex
-      direction="column"
-      justify="center"
-      style={{
-        padding: "32px",
-      }}
-    >
+    <Flex direction="column" justify="center">
       <Col span={12} style={{ padding: "32px" }}>
         <Form layout="vertical" variant="filled">
           {surveyActionButtons()}

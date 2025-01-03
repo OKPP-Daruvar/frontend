@@ -18,9 +18,11 @@ function App() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f6f5fa" }}>
+    <div
+      style={{ minHeight: "100vh", backgroundColor: "#f6f5fa", padding: "8px" }}
+    >
       <Router>
-        <Header />
+        <Header user={user} />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
