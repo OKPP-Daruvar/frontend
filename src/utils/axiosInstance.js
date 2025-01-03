@@ -10,9 +10,10 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log("Token", token);
     }
     return config;
   },
@@ -27,8 +28,9 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("authToken");
-      window.location.href = "/login";
+      // localStorage.removeItem("authToken");
+      // window.location.href = "/login";
+      console.log("Bivas bivan");
     }
     return Promise.reject(error);
   }

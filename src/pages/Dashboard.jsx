@@ -1,4 +1,3 @@
-import React from "react";
 import { handleLogout } from "../auth";
 
 const Dashboard = () => {
