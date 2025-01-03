@@ -3,11 +3,14 @@ import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [isShowingPassword, setIsShowingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setIsShowingPassword((prevState) => !prevState);
@@ -32,7 +35,7 @@ const LoginPage = () => {
       sessionStorage.setItem("token", token);
 
       console.log("Login Successful:", user);
-      alert("Login Successful!");
+      navigate("/");
     } catch (err) {
       console.error("Login Error:", err.message);
       setError(err.message);

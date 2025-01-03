@@ -9,6 +9,8 @@ import CreateSurveyPage from "./pages/CreateSurveyPage";
 import Dashboard from "./pages/Dashboard";
 import { useEffect, useState } from "react";
 import { listenForAuthChanges } from "./auth";
+import PublicRoute from "./PublicRoute";
+import SurveyDisplayPage from "./pages/SurveyDisplayPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -31,8 +33,26 @@ function App() {
         <Header />
 
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/survey"
+            element={<SurveyDisplayPage />}
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/"
             element={
