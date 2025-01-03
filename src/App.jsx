@@ -19,10 +19,17 @@ function App() {
 
   return (
     <div
-      style={{ minHeight: "100vh", backgroundColor: "#f6f5fa", padding: "8px" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: "#f6f5fa",
+        padding: "8px",
+      }}
     >
       <Router>
-        <Header user={user} />
+        <Header />
+
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

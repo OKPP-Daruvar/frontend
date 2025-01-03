@@ -1,4 +1,4 @@
-import { Col, Form, Input, Flex, Button } from "antd";
+import { Col, Form, Input, Flex, Button, Card, Alert } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
@@ -9,11 +9,11 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const showPasswordHandler = () => {
-    setIsShowingPassword(!isShowingPassword);
+  const togglePasswordVisibility = () => {
+    setIsShowingPassword((prevState) => !prevState);
   };
 
-  const onFinish = async (values) => {
+  const handleLogin = async (values) => {
     setLoading(true);
     setError("");
 
@@ -31,7 +31,7 @@ const LoginPage = () => {
       localStorage.setItem("token", token);
       sessionStorage.setItem("token", token);
 
-      console.log("Login Successful:", userCredential.user);
+      console.log("Login Successful:", user);
       alert("Login Successful!");
     } catch (err) {
       console.error("Login Error:", err.message);
@@ -41,67 +41,76 @@ const LoginPage = () => {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
+  const handleValidationFailed = (errorInfo) => {
     console.log("Validation Failed:", errorInfo);
   };
 
   return (
-    <Flex align="center" justify="center">
+    <Flex align="center" justify="center" flex={1}>
       <Col span={8}>
-        <Form
-          style={{ margin: "auto" }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
-            ]}
+        <Card title="Login">
+          <Form
+            style={{ margin: "auto" }}
+            onFinish={handleLogin}
+            onFinishFailed={handleValidationFailed}
+            autoComplete="off"
           >
-            <Input />
-          </Form.Item>
+            {error && (
+              <Alert
+                type="error"
+                message={error}
+                showIcon
+                style={{ marginBottom: "16px" }}
+              />
+            )}
 
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[
-              { required: true, message: "Please input your password!" },
-              {
-                min: 8,
-                message: "Password must be at least 8 characters long!",
-              },
-            ]}
-          >
-            <Input.Password
-              type={isShowingPassword ? "text" : "password"}
-              iconRender={(visible) =>
-                visible ? (
-                  <EyeOutlined
-                    onClick={showPasswordHandler}
-                    style={{ cursor: "pointer" }}
-                  />
-                ) : (
-                  <EyeInvisibleOutlined
-                    onClick={showPasswordHandler}
-                    style={{ cursor: "pointer" }}
-                  />
-                )
-              }
-            />
-          </Form.Item>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Please input your email!" },
+                { type: "email", message: "Please enter a valid email!" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
 
-          {error && <p style={{ color: "red" }}>{error}</p>}
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Please input your password!" },
+                {
+                  min: 8,
+                  message: "Password must be at least 8 characters long!",
+                },
+              ]}
+            >
+              <Input.Password
+                type={isShowingPassword ? "text" : "password"}
+                iconRender={(visible) =>
+                  visible ? (
+                    <EyeOutlined
+                      onClick={togglePasswordVisibility}
+                      style={{ cursor: "pointer" }}
+                    />
+                  ) : (
+                    <EyeInvisibleOutlined
+                      onClick={togglePasswordVisibility}
+                      style={{ cursor: "pointer" }}
+                    />
+                  )
+                }
+              />
+            </Form.Item>
 
-          <Form.Item label={null}>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block loading={loading}>
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
       </Col>
     </Flex>
   );
