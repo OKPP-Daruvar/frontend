@@ -10,19 +10,26 @@ import {
   Flex,
   FloatButton,
   Divider,
+  Modal,
 } from "antd";
 import {
   DownOutlined,
   DeleteOutlined,
   PlusOutlined,
   CheckOutlined,
+  CopyOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons";
 import axiosInstance from "../utils/axiosInstance";
+import { message } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const CreateSurveyPage = () => {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDescription, setSurveyDescription] = useState("");
   const [questions, setQuestions] = useState([]);
+
+  const navigate = useNavigate();
 
   const addQuestion = () => {
     const newQuestionKey = questions.length + 1;
@@ -305,6 +312,18 @@ const CreateSurveyPage = () => {
     </FloatButton.Group>
   );
 
+  const copyToClipboard = (textToCopy) => {
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        message.success("Copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        message.error("Failed to copy.");
+      });
+  };
+
   const submitSurvey = () => {
     if (validateSurvey() === false) return;
 
@@ -314,6 +333,47 @@ const CreateSurveyPage = () => {
       .post("/Survey/CreateSurvey", formattedData)
       .then((res) => {
         console.log("Survey created successfully: ", res.data);
+        Modal.success({
+          title: "Survey created successfully",
+          content: (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Row gutter={16} align="middle">
+                <Col>
+                  <Button
+                    icon={<CopyOutlined />}
+                    onClick={() => {
+                      copyToClipboard(
+                        "http://localhost:5173/survey?surveyId=" + res.data
+                      );
+                    }}
+                  >
+                    Copy link
+                  </Button>
+                </Col>
+                <Col>
+                  <Button
+                    icon={<ArrowRightOutlined />}
+                    onClick={() => {
+                      Modal.destroyAll();
+                      navigate("/dashboard");
+                    }}
+                    type="primary"
+                  >
+                    Go to dashboard
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+          ),
+          okButtonProps: { style: { display: "none" } },
+          cancelButtonProps: { style: { display: "none" } },
+        });
       })
       .catch((err) => {
         console.error("Error creating survey: ", err);
