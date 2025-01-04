@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Header from "./components/Header";
 import LoginPage from "./pages/LoginPage";
 import CreateSurveyPage from "./pages/CreateSurveyPage";
+import SurveyAnalyticsPage from "./pages/SurveyAnalyticsPage";
 import Dashboard from "./pages/Dashboard";
 import { useEffect, useState } from "react";
 import { listenForAuthChanges } from "./auth";
@@ -30,13 +31,11 @@ function App() {
       }}
     >
       <Router>
-        <Header />
+        {location.pathname !== "/survey" && <Header />}
 
         <Routes>
-          <Route
-            path="/survey"
-            element={<SurveyDisplayPage />}
-          />
+          <Route path="/survey" element={<SurveyDisplayPage />} />
+          <Route path="/survey/analytics" element={<SurveyAnalyticsPage />} />
           <Route
             path="/login"
             element={
@@ -62,7 +61,7 @@ function App() {
             }
           />
           <Route
-            path="/new/survey"
+            path="/survey/new"
             element={
               <ProtectedRoute>
                 <CreateSurveyPage />

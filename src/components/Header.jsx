@@ -46,13 +46,6 @@ const Header = () => {
         OKPP Daruvar Projekt
       </Link>
 
-      <Link
-        to={"/survey/E5J9Sr8hIYJDl98A1OLy"}
-        style={{ fontSize: "1.2rem", fontWeight: "bold", padding: "1rem" }}
-      >
-        OKPP Daruvar Projekt
-      </Link>
-
       <div style={{ padding: "1rem" }}>
         {user ? dashboardLink() : loginLink()}
       </div>

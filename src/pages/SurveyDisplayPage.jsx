@@ -81,7 +81,7 @@ const SurveyDisplayPage = () => {
     console.log("Formatted Data: ", JSON.stringify(formattedData, null, 2));
 
     axiosInstance
-      .post("/Survey/SubmitResponses", formattedData)
+      .post("/Survey/SendAnswer?surveyId=" + surveyId, formattedData)
       .then((res) => {
         console.log("Responses submitted successfully: ", res.data);
       })
