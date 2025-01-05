@@ -11,23 +11,32 @@ import {
   FloatButton,
   Divider,
   Modal,
+  message,
+  Tabs,
 } from "antd";
 import {
   DownOutlined,
   DeleteOutlined,
   PlusOutlined,
   CheckOutlined,
-  CopyOutlined,
+  MinusOutlined,
+  LinkOutlined,
+  InfoCircleOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import axiosInstance from "../utils/axiosInstance";
-import { message } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const CreateSurveyPage = () => {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDescription, setSurveyDescription] = useState("");
   const [questions, setQuestions] = useState([]);
+  const [showingShareModal, setShowingShareModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailList, setEmailList] = useState([]);
+  const [surveyId, setSurveyId] = useState(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const navigate = useNavigate();
 
@@ -172,7 +181,7 @@ const CreateSurveyPage = () => {
                   gap={8}
                   align="center"
                 >
-                  <span style={{ color: "#bbb" }}>{choice.key}.</span>
+                  <span style={{ color: "#bbbbbb" }}>{choice.key}.</span>
                   <Input
                     value={choice.value}
                     placeholder="Choice"
@@ -197,7 +206,7 @@ const CreateSurveyPage = () => {
                   />
                   <Button
                     danger
-                    icon={<DeleteOutlined />}
+                    icon={<MinusOutlined />}
                     onClick={() => deleteChoice(question.key, choice.key)}
                   />
                 </Flex>
@@ -207,7 +216,7 @@ const CreateSurveyPage = () => {
                 align="center"
                 justify="center"
                 style={{
-                  color: "#bbb",
+                  color: "#bbbbbb",
                   fontSize: "1.2em",
                   fontWeight: "bold",
                   width: "100%",
@@ -333,68 +342,42 @@ const CreateSurveyPage = () => {
       .post("/Survey/CreateSurvey", formattedData)
       .then((res) => {
         console.log("Survey created successfully: ", res.data);
-        Modal.success({
-          title: "Survey created successfully",
-          content: (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Row gutter={16} align="middle">
-                <Col>
-                  <Button
-                    icon={<CopyOutlined />}
-                    onClick={() => {
-                      copyToClipboard(
-                        "http://localhost:5173/survey?surveyId=" + res.data
-                      );
-                    }}
-                  >
-                    Copy link
-                  </Button>
-                </Col>
-                <Col>
-                  <Button
-                    icon={<ArrowRightOutlined />}
-                    onClick={() => {
-                      Modal.destroyAll();
-                      navigate("/dashboard");
-                    }}
-                    type="primary"
-                  >
-                    Go to dashboard
-                  </Button>
-                </Col>
-              </Row>
-            </div>
-          ),
-          okButtonProps: { style: { display: "none" } },
-          cancelButtonProps: { style: { display: "none" } },
-        });
+        showMessage("success", "Successfully created survey.");
+        setSurveyId(res.data);
+        showShareModal();
       })
       .catch((err) => {
         console.error("Error creating survey: ", err);
       });
   };
 
+  const showMessage = (type, content) => {
+    messageApi.open({
+      type,
+      content,
+    });
+  };
+
   const validateSurvey = () => {
     if (!surveyTitle) {
-      alert("Please enter a survey title.");
+      showMessage("warning", "Please enter a survey title.");
       return false;
     }
 
     if (!surveyDescription) {
-      alert("Please enter a survey description.");
+      showMessage("warning", "Please enter a survey description.");
+      return false;
+    }
+
+    if (questions.length === 0) {
+      showMessage("warning", "Please add at least one question.");
       return false;
     }
 
     const invalidQuestions = questions.filter((q) => !q.questionTitle);
 
     if (invalidQuestions.length > 0) {
-      alert("Please fill in all question titles.");
+      showMessage("warning", "Please fill in all question titles.");
       return false;
     }
 
@@ -403,8 +386,9 @@ const CreateSurveyPage = () => {
     );
 
     if (invalidChoices.length > 0) {
-      alert(
-        "Please add at least 2 choices for each single or multiple choice question."
+      showMessage(
+        "warning",
+        "Please add at least two choices for multiple or single choice questions."
       );
       return false;
     }
@@ -417,7 +401,7 @@ const CreateSurveyPage = () => {
     });
 
     if (invalidChoiceValues.length > 0) {
-      alert("Please fill in all choice values.");
+      showMessage("warning", "Please fill in all choice values.");
       return false;
     }
 
@@ -457,43 +441,290 @@ const CreateSurveyPage = () => {
     return formattedData;
   };
 
+  const showShareModal = () => {
+    setShowingShareModal(true);
+  };
+
+  const closeShareModal = () => {
+    setShowingShareModal(false);
+  };
+
+  const copyLinkSuccess = () => {
+    messageApi.open({
+      type: "success",
+      content: "Successfully copied survey link",
+    });
+  };
+
+  const copySurveyLink = () => {
+    const surveyLink = `${window.location.origin}/survey?surveyId=${surveyId}`;
+    navigator.clipboard.writeText(surveyLink);
+    copyLinkSuccess();
+  };
+
+  const handleModalClose = () => {
+    setEmailList([]);
+  };
+
+  const copyLinkShareTabContent = () => (
+    <Col>
+      <Col
+        align="middle"
+        style={{
+          marginBottom: "16px",
+          display: "flex",
+          gap: "8px",
+        }}
+      >
+        <InfoCircleOutlined
+          style={{ fontSize: "1.2rem", color: "#1890ff", marginRight: "16px" }}
+        />
+        <div style={{ textAlign: "justify" }}>
+          Click on the button below to copy the link to your clipboard. The
+          survey can be filled out by anyone with the link.
+        </div>
+      </Col>
+      <Button
+        block
+        type="primary"
+        icon={<LinkOutlined />}
+        onClick={copySurveyLink}
+      >
+        Copy link
+      </Button>
+    </Col>
+  );
+
+  const isEmailInvalid = !email.match(
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  );
+
+  const duplicateEmail = emailList.includes(email);
+
+  const addEmailDisabled = isEmailInvalid || duplicateEmail;
+
+  const getEmailRequestData = () => ({
+    emails: emailList,
+    surveyLink: `${window.location.origin}/survey?surveyId=${surveyId}`,
+  });
+
+  const sendEmail = () => {
+    setSendingEmail(true);
+    const emailRequestData = getEmailRequestData();
+    axiosInstance
+      .post("/EmailService/SendEmail", emailRequestData)
+      .then((response) => {
+        console.log(response);
+        setEmailList([]);
+        setEmail("");
+        messageApi.open({
+          type: "success",
+          content: "Email(s) sent successfully",
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        messageApi.open({
+          type: "error",
+          content: "Failed to send email(s)",
+        });
+      })
+      .finally(() => {
+        setSendingEmail(false);
+      });
+  };
+
+  const emailShareTabContent = () => (
+    <Col>
+      <Col
+        align="middle"
+        style={{
+          marginBottom: "16px",
+          display: "flex",
+          gap: "8px",
+        }}
+      >
+        <InfoCircleOutlined
+          style={{ fontSize: "1.2rem", color: "#1890ff", marginRight: "16px" }}
+        />
+        <div style={{ textAlign: "justify" }}>
+          Enter the email addresses of the people you want to share the survey
+          with. They will receive an email with a link to the survey.
+        </div>
+      </Col>
+
+      <Row gutter={4} align="middle" style={{ marginBottom: "16px" }}>
+        <Col flex="1">
+          <Input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Col>
+        <Col>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEmailList((prev) => [...prev, email]);
+              setEmail("");
+            }}
+            disabled={addEmailDisabled}
+          >
+            Add
+          </Button>
+        </Col>
+      </Row>
+
+      {emailList.length > 0 && (
+        <Col style={{ marginBottom: "16px" }}>
+          {emailList.map((email, index) => (
+            <Row
+              key={index}
+              align="middle"
+              justify="space-between"
+              style={{
+                padding: "4px 12px",
+                marginBottom: "8px",
+                backgroundColor: "#f9f9f9",
+                borderRadius: "4px",
+                border: "1px solid #d9d9d9",
+              }}
+            >
+              <Col
+                style={{
+                  flex: 1,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                <span style={{ fontSize: "1rem", color: "#5e677d" }}>
+                  {email}
+                </span>
+              </Col>
+              <Col>
+                <Button
+                  type="text"
+                  danger
+                  icon={<MinusOutlined />}
+                  onClick={() => {
+                    setEmailList((prev) => {
+                      const newList = [...prev];
+                      newList.splice(index, 1);
+                      return newList;
+                    });
+                  }}
+                />
+              </Col>
+            </Row>
+          ))}
+        </Col>
+      )}
+
+      <Button
+        block
+        type="primary"
+        icon={<LinkOutlined />}
+        disabled={!emailList.length}
+        onClick={sendEmail}
+        loading={sendingEmail}
+      >
+        Share via email
+      </Button>
+    </Col>
+  );
+
+  const items = [
+    {
+      key: "1",
+      label: "Link",
+      children: copyLinkShareTabContent(),
+    },
+    {
+      key: "2",
+      label: "Email",
+      children: emailShareTabContent(),
+    },
+  ];
+
   return (
-    <Flex direction="column" justify="center">
-      <Col span={12} style={{ padding: "32px" }}>
-        <Form layout="vertical" variant="filled">
-          {surveyActionButtons()}
+    <>
+      {contextHolder}
+      {surveyActionButtons()}
 
-          <Card style={{ marginBottom: "16px" }}>
-            <Input
-              value={surveyTitle}
-              onChange={(e) => setSurveyTitle(e.target.value)}
-              name="surveyTitle"
-              placeholder="Survey Title"
-              size="large"
-              variant="borderless"
-              style={{ fontWeight: "bold", fontSize: "1.5em" }}
-              required
-            />
+      <Modal
+        centered
+        open={showingShareModal}
+        onCancel={closeShareModal}
+        onClose={handleModalClose}
+        footer={null}
+        title={
+          surveyTitle ? (
+            <div style={{ textAlign: "center", fontWeight: "normal" }}>
+              Share{" "}
+              <span style={{ fontWeight: "bold", color: "#6f79f7" }}>
+                {surveyTitle}
+              </span>
+            </div>
+          ) : (
+            "Loading..."
+          )
+        }
+      >
+        <Tabs defaultActiveKey="1" items={items} centered />
+        <Button
+          style={{ marginTop: "16px" }}
+          block
+          icon={<ArrowRightOutlined />}
+          onClick={() => {
+            closeShareModal();
+            navigate("/dashboard");
+          }}
+        >
+          Go to dashboard
+        </Button>
+      </Modal>
 
-            <Input
-              value={surveyDescription}
-              onChange={(e) => setSurveyDescription(e.target.value)}
-              name="surveyDescription"
-              placeholder="Enter a short survey description."
-              variant="borderless"
-              required
-            />
-          </Card>
+      <Row justify="center" align="top">
+        <Col span={14}>
+          <Form
+            layout="vertical"
+            variant="filled"
+            style={{ marginTop: "16px" }}
+          >
+            <Card style={{ marginBottom: "16px" }}>
+              <Input
+                value={surveyTitle}
+                onChange={(e) => setSurveyTitle(e.target.value)}
+                name="surveyTitle"
+                placeholder="Survey Title"
+                size="large"
+                variant="borderless"
+                style={{ fontWeight: "bold", fontSize: "1.5em" }}
+                required
+              />
 
-          <Card>
+              <Input
+                value={surveyDescription}
+                onChange={(e) => setSurveyDescription(e.target.value)}
+                name="surveyDescription"
+                placeholder="Enter a short survey description."
+                variant="borderless"
+                required
+              />
+            </Card>
+
             {questions.length > 0 ? (
-              questions.map((question) => getQuestionElement(question))
+              <Card>
+                {questions.map((question) => getQuestionElement(question))}
+              </Card>
             ) : (
               <Flex
                 align="center"
                 justify="center"
+                flex={1}
                 style={{
-                  color: "#bbb",
+                  color: "#bbbbbb",
                   fontSize: "1.2em",
                   fontWeight: "bold",
                   margin: "32px",
@@ -502,10 +733,10 @@ const CreateSurveyPage = () => {
                 There are no questions yet.
               </Flex>
             )}
-          </Card>
-        </Form>
-      </Col>
-    </Flex>
+          </Form>
+        </Col>
+      </Row>
+    </>
   );
 };
 
