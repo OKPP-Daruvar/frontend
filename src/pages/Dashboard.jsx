@@ -144,8 +144,9 @@ const Dashboard = () => {
       .delete(`/Survey/DeleteSurvey?surveyId=${survey.id}`)
       .then((response) => {
         console.log(response);
-        const newSurveys = [...surveys];
-        newSurveys.splice(index, 1);
+        const newSurveys = surveys.filter(
+          (survey) => survey.id !== response.data.id
+        );
         setSurveys(newSurveys);
       })
       .catch((error) => {

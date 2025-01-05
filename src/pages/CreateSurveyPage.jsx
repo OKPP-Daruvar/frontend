@@ -13,6 +13,7 @@ import {
   Modal,
   message,
   Tabs,
+  Alert,
 } from "antd";
 import {
   DownOutlined,
@@ -713,6 +714,15 @@ const CreateSurveyPage = () => {
                 required
               />
             </Card>
+
+            <Alert
+              type="info"
+              showIcon
+              message={
+                "Each survey has three required questions, age, gender and education level, used for analysis about the respondent."
+              }
+              style={{ marginBottom: "16px" }}
+            />
 
             {questions.length > 0 ? (
               <Card>
