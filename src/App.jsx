@@ -34,14 +34,7 @@ function App() {
         {location.pathname !== "/survey" && <Header />}
 
         <Routes>
-          <Route
-            path="/survey"
-            element={
-              <PublicRoute>
-                <SurveyDisplayPage />
-              </PublicRoute>
-            }
-          />
+          <Route path="/survey" element={<SurveyDisplayPage />} />
           <Route
             path="/survey/analytics"
             element={
