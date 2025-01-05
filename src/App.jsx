@@ -66,14 +66,7 @@ function App() {
               </PublicRoute>
             }
           />
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <HomePage />
-              </PublicRoute>
-            }
-          />
+          <Route path="/" element={<HomePage />} />
           <Route
             path="/survey/new"
             element={
