@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { listenForAuthChanges } from "../auth";
-import { Flex } from "antd";
+import { Dropdown, Flex, Row, Space } from "antd";
 import { Link } from "react-router-dom";
-import { LoginOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  LoginOutlined,
+  SettingOutlined,
+  UserAddOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -20,12 +26,40 @@ const Header = () => {
     );
   };
 
+  const items = [
+    {
+      key: "1",
+      label: (
+        <Link to={"/login"}>
+          <Row justify={"space-between"}>
+            <div style={{ marginRight: "8px" }}>Login</div> <LoginOutlined />
+          </Row>
+        </Link>
+      ),
+    },
+    {
+      key: "2",
+      label: (
+        <Link to={"/register"}>
+          <Row justify={"space-between"}>
+            <div style={{ marginRight: "8px" }}>Register</div>{" "}
+            <UserAddOutlined />
+          </Row>
+        </Link>
+      ),
+    },
+  ];
+
   const loginLink = () => {
     return (
-      <Link to={"/login"}>
-        <LoginOutlined style={{ marginRight: "8px" }} />
-        Login
-      </Link>
+      <Dropdown menu={{ items }}>
+        <a onClick={(e) => e.preventDefault()}>
+          <Space>
+            Account
+            <UserOutlined />
+          </Space>
+        </a>
+      </Dropdown>
     );
   };
 
