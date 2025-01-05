@@ -31,7 +31,8 @@ const Dashboard = () => {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(false);
-  const [disabledItems, setDisabledItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState([]);
+  const [deletingDisabled, setDeletingDisabled] = useState(false);
   const [modalSurvey, setModalSurvey] = useState(null);
   const [showingShareModal, setShowingShareModal] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -131,33 +132,33 @@ const Dashboard = () => {
   };
 
   const deleteSurvey = (survey, index) => () => {
-    console.log(disabledItems);
-    setDisabledItems((prev) => {
-      const newDisabledItems = [...prev];
-      newDisabledItems[index] = true;
-      return newDisabledItems;
+    const surveyId = survey.id;
+
+    setLoadingItems((prev) => {
+      const newLoadingItems = [...prev];
+      newLoadingItems[index] = true;
+      return newLoadingItems;
     });
 
-    console.log(disabledItems);
+    setDeletingDisabled(true);
 
     axiosInstance
-      .delete(`/Survey/DeleteSurvey?surveyId=${survey.id}`)
+      .delete(`/Survey/DeleteSurvey?surveyId=${surveyId}`)
       .then((response) => {
         console.log(response);
-        const newSurveys = surveys.filter(
-          (survey) => survey.id !== response.data.id
-        );
+        const newSurveys = surveys.filter((survey) => survey.id !== surveyId);
         setSurveys(newSurveys);
       })
       .catch((error) => {
         console.log(error);
       })
       .finally(() => {
-        setDisabledItems((prev) => {
-          const newDisabledItems = [...prev];
-          newDisabledItems[index] = false;
-          return newDisabledItems;
+        setLoadingItems((prev) => {
+          const newLoadingItems = [...prev];
+          newLoadingItems[index] = false;
+          return newLoadingItems;
         });
+        setDeletingDisabled(false);
       });
   };
 
@@ -506,7 +507,8 @@ const Dashboard = () => {
                         danger
                         icon={<DeleteOutlined />}
                         onClick={deleteSurvey(item, index)}
-                        loading={disabledItems[index]}
+                        loading={loadingItems[index]}
+                        disabled={deletingDisabled}
                       >
                         Delete
                       </Button>
