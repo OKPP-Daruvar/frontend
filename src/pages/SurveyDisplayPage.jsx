@@ -1,14 +1,77 @@
 import { useState, useEffect } from "react";
-import { Card, Input, Radio, Checkbox, Button, Col, message } from "antd";
+import {
+  Card,
+  Input,
+  Radio,
+  Checkbox,
+  Button,
+  Col,
+  message,
+  Row,
+  Space,
+  Form,
+  Select,
+  Segmented,
+  Alert,
+  Divider,
+} from "antd";
 import axiosInstance from "../utils/axiosInstance";
 import { useLocation } from "react-router-dom";
+import {
+  ManOutlined,
+  QuestionOutlined,
+  WomanOutlined,
+} from "@ant-design/icons";
 
 const SurveyDisplayPage = () => {
   const [survey, setSurvey] = useState(null);
   const [responses, setResponses] = useState({});
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [educationLevel, setEducationLevel] = useState("");
+  const [age, setAge] = useState(null);
+
+  const [gender, setGender] = useState(null);
+  const options = [
+    {
+      label: (
+        <Space>
+          <ManOutlined style={{ color: "#1890ff", fontSize: "18px" }} />
+          Male
+        </Space>
+      ),
+      value: "Male",
+    },
+    {
+      label: (
+        <Space>
+          <WomanOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
+          Female
+        </Space>
+      ),
+      value: "Female",
+    },
+    {
+      label: (
+        <Space>
+          <QuestionOutlined style={{ color: "#5e677d", fontSize: "18px" }} />
+          Other
+        </Space>
+      ),
+      value: "Other",
+    },
+  ];
+
+  const [educationLevel, setEducationLevel] = useState(null);
+  const educationLevels = [
+    "Primary School",
+    "High School",
+    "Associate Degree",
+    "Bachelor's Degree",
+    "Master's Degree",
+    "Doctorate",
+  ];
+
+  const [submittingResponse, setSubmittingResponse] = useState(false);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -80,13 +143,24 @@ const SurveyDisplayPage = () => {
 
     console.log("Formatted Data: ", JSON.stringify(formattedData, null, 2));
 
+    setSubmittingResponse(true);
+
     axiosInstance
       .post("/Survey/SendAnswer?surveyId=" + surveyId, formattedData)
       .then((res) => {
         console.log("Responses submitted successfully: ", res.data);
+        messageApi.success("Successfully submitted answers!");
+        setResponses({});
+        setAge(null);
+        setGender(null);
+        setEducationLevel(null);
       })
       .catch((err) => {
         console.error("Error submitting responses: ", err);
+        messageApi.error("An error occured while submitting answers.");
+      })
+      .finally(() => {
+        setSubmittingResponse(false);
       });
   };
 
@@ -94,108 +168,167 @@ const SurveyDisplayPage = () => {
     return <p>Loading survey...</p>;
   }
 
-  return surveyId ? (
-    <Col align="center" style={{ width: "100%" }}>
-      <div style={{ width: "100%", textAlign: "center", marginBottom: "16px" }}>
-        <h1>{survey.title}</h1>
-        <p>{survey.description}</p>
-      </div>
-
+  const analyticsQuestions = () => {
+    return (
       <Card style={{ width: "100%", marginBottom: "16px" }}>
-        <p style={{ fontWeight: "bold" }}>Age:</p>
-        <Input
-          placeholder="Enter your age"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
+        <Alert
+          type="info"
+          showIcon
+          message={"These questions are used for survey data analysis."}
+          style={{ marginBottom: "16px" }}
         />
-      </Card>
 
-      <Card style={{ width: "100%", marginBottom: "16px" }}>
-        <p style={{ fontWeight: "bold" }}>Gender:</p>
-        <Radio.Group
-          style={{ display: "flex", flexDirection: "column" }}
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item label="Age" colon={false}>
+              <Input
+                placeholder="Enter your age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item label="Gender" colon={false}>
+              <Segmented
+                options={options}
+                value={gender}
+                onChange={(value) => setGender(value)}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item
+          label="Education Level"
+          colon={false}
+          style={{ marginBottom: "0" }}
         >
-          <Radio value="Male">Male</Radio>
-          <Radio value="Female">Female</Radio>
-          <Radio value="Other">Other</Radio>
-        </Radio.Group>
+          <Select
+            placeholder="Select your education level"
+            value={educationLevel}
+            onChange={(value) => setEducationLevel(value)}
+          >
+            {educationLevels.map((level) => (
+              <Select.Option key={level} value={level}>
+                {level}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
       </Card>
+    );
+  };
 
-      <Card style={{ width: "100%", marginBottom: "16px" }}>
-        <p style={{ fontWeight: "bold" }}>Education Level:</p>
-        <Input
-          placeholder="Enter your education level"
-          value={educationLevel}
-          onChange={(e) => setEducationLevel(e.target.value)}
-        />
-      </Card>
-
-      <Col direction="row" align="center" style={{ width: "100%" }}>
-        {survey.questions && survey.questions.length > 0 ? (
-          survey.questions.map((question) => (
-            <Card
-              key={question.questionId}
-              style={{ width: "100%", marginBottom: "16px" }}
-            >
-              <p style={{ fontWeight: "bold" }}>{question.text}</p>
-
-              {question.type === "OpenText" && (
-                <Input
-                  placeholder="Your answer"
-                  value={responses[question.questionId] || ""}
-                  onChange={(e) =>
-                    handleResponseChange(question.questionId, e.target.value)
-                  }
-                />
-              )}
-
-              {question.type === "SingleChoice" && (
-                <Radio.Group
-                  style={{ display: "flex", flexDirection: "column" }}
-                  value={responses[question.questionId] || ""}
-                  onChange={(e) =>
-                    handleResponseChange(question.questionId, e.target.value)
-                  }
-                >
-                  {question.options.map((option, index) => (
-                    <Radio
-                      key={index}
-                      value={option}
-                      style={{ marginBottom: "8px" }}
-                    >
-                      {option}
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              )}
-
-              {question.type === "MultipleChoice" && (
-                <Checkbox.Group
-                  style={{ display: "flex", flexDirection: "column" }}
-                  options={question.options}
-                  value={responses[question.questionId] || []}
-                  onChange={(values) =>
-                    handleResponseChange(question.questionId, values)
-                  }
-                />
-              )}
+  return surveyId ? (
+    <>
+      {contextHolder}
+      <Row justify="center" align="middle" style={{ margin: "16px 0" }}>
+        <Col span={14}>
+          <Form
+            wrapperCol={{ span: 18 }}
+            labelCol={{ span: 6 }}
+            labelAlign="left"
+          >
+            <Card style={{ marginBottom: "16px" }}>
+              <Space
+                direction="vertical"
+                style={{
+                  width: "100%",
+                  textAlign: "justify",
+                }}
+              >
+                <div style={{ fontSize: "2.5em", fontWeight: "bold" }}>
+                  {survey.title}
+                </div>
+                <div style={{ color: "#5e677d" }}>{survey.description}</div>
+              </Space>
             </Card>
-          ))
-        ) : (
-          <p>No questions available.</p>
-        )}
-      </Col>
 
-      <Button
-        type="primary"
-        onClick={submitResponses}
-        style={{ marginTop: "16px" }}
-      >
-        Submit
-      </Button>
-    </Col>
+            {analyticsQuestions()}
+
+            <Card style={{ marginBottom: "16px" }}>
+              <Col span={24}>
+                {survey.questions && survey.questions.length > 0 ? (
+                  survey.questions.map((question, index) => (
+                    <>
+                      <div
+                        key={question.key}
+                        style={{
+                          marginBottom:
+                            index + 1 !== survey.questions.length
+                              ? "32px"
+                              : "0",
+                        }}
+                      >
+                        <div
+                          style={{ fontSize: "1.5rem", marginBottom: "8px" }}
+                        >
+                          {question.text}
+                        </div>
+                        {question.type === "OpenText" && (
+                          <Input
+                            placeholder="Your answer"
+                            value={responses[question.questionId] || ""}
+                            onChange={(e) =>
+                              handleResponseChange(
+                                question.questionId,
+                                e.target.value
+                              )
+                            }
+                          />
+                        )}
+                        {question.type === "SingleChoice" && (
+                          <Radio.Group
+                            style={{ display: "flex", flexDirection: "column" }}
+                            value={responses[question.questionId] || ""}
+                            onChange={(e) =>
+                              handleResponseChange(
+                                question.questionId,
+                                e.target.value
+                              )
+                            }
+                          >
+                            {question.options.map((option, index) => (
+                              <Radio key={index} value={option}>
+                                {option}
+                              </Radio>
+                            ))}
+                          </Radio.Group>
+                        )}
+                        {question.type === "MultipleChoice" && (
+                          <Checkbox.Group
+                            style={{ display: "flex", flexDirection: "column" }}
+                            options={question.options}
+                            value={responses[question.questionId] || []}
+                            onChange={(values) =>
+                              handleResponseChange(question.questionId, values)
+                            }
+                          />
+                        )}
+                      </div>
+                      {index + 1 !== survey.questions.length && <Divider />}
+                    </>
+                  ))
+                ) : (
+                  <p>No questions available.</p>
+                )}
+              </Col>
+            </Card>
+
+            <Button
+              type="primary"
+              onClick={submitResponses}
+              block
+              loading={submittingResponse}
+            >
+              Submit
+            </Button>
+          </Form>
+        </Col>
+      </Row>
+    </>
   ) : (
     <p>Survey ID not provided.</p>
   );
