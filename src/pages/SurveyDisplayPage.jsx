@@ -209,13 +209,15 @@ const SurveyDisplayPage = () => {
             placeholder="Select your education level"
             value={educationLevel}
             onChange={(value) => setEducationLevel(value)}
-          >
-            {educationLevels.map((level) => (
-              <Select.Option key={level} value={level}>
-                {level}
-              </Select.Option>
-            ))}
-          </Select>
+            options={[
+              { label: "Primary School", value: "primary" },
+              { label: "High School", value: "high" },
+              { label: "Associate Degree", value: "associate" },
+              { label: "Bachelor's Degree", value: "bachelor" },
+              { label: "Master's Degree", value: "master" },
+              { label: "Doctorate", value: "doctorate" },
+            ]}
+          />
         </Form.Item>
       </Card>
     );
