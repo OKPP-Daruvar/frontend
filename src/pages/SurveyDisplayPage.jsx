@@ -14,6 +14,7 @@ import {
   Segmented,
   Alert,
   Divider,
+  Flex,
 } from "antd";
 import axiosInstance from "../utils/axiosInstance";
 import { useLocation } from "react-router-dom";
@@ -21,9 +22,13 @@ import {
   ManOutlined,
   QuestionOutlined,
   WomanOutlined,
+  LoadingOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 
 const SurveyDisplayPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [survey, setSurvey] = useState(null);
   const [responses, setResponses] = useState({});
   const [age, setAge] = useState(null);
@@ -85,6 +90,10 @@ const SurveyDisplayPage = () => {
       })
       .catch((err) => {
         console.error("Error fetching survey: ", err);
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [surveyId]);
 
@@ -164,8 +173,26 @@ const SurveyDisplayPage = () => {
       });
   };
 
-  if (surveyId && !survey) {
-    return <p>Loading survey...</p>;
+  if (loading) {
+    return (
+      <Flex flex={1} align="center" justify="center">
+        <Space direction="vertical" align="center">
+          <LoadingOutlined spin style={{ fontSize: "32px" }} />
+          Loading
+        </Space>
+      </Flex>
+    );
+  }
+
+  if (error) {
+    return (
+      <Flex flex={1} align="center" justify="center">
+        <Space direction="vertical" align="center">
+          <CloseOutlined style={{ fontSize: "32px", color: "red" }} />
+          Error
+        </Space>
+      </Flex>
+    );
   }
 
   const analyticsQuestions = () => {
