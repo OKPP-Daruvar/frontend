@@ -77,7 +77,7 @@ const Header = () => {
         to={"/"}
         style={{ fontSize: "1.2rem", fontWeight: "bold", padding: "1rem" }}
       >
-        OKPP Daruvar Projekt
+        OKPP Daruvar Project
       </Link>
 
       <div style={{ padding: "1rem" }}>

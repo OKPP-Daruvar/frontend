@@ -14,6 +14,8 @@ import {
   message,
   Tabs,
   Alert,
+  Space,
+  Affix,
 } from "antd";
 import {
   DownOutlined,
@@ -298,28 +300,22 @@ const CreateSurveyPage = () => {
     );
   };
 
-  const newQuestionButton = () => (
-    <FloatButton
-      icon={<PlusOutlined />}
-      tooltip="Add new question"
-      onClick={addQuestion}
-    />
-  );
-
   const submitSurveyButton = () => (
-    <FloatButton
+    <Button
       type="primary"
       icon={<CheckOutlined />}
-      tooltip="Submit survey"
+      iconPosition="end"
       onClick={submitSurvey}
-    />
-  );
-
-  const surveyActionButtons = () => (
-    <FloatButton.Group shape="square" style={{ insetInlineEnd: 48 }}>
-      {newQuestionButton()}
-      {submitSurveyButton()}
-    </FloatButton.Group>
+      size="large"
+      style={{
+        position: "fixed",
+        bottom: "32px",
+        right: "32px",
+        zIndex: 1000,
+      }}
+    >
+      Submit survey
+    </Button>
   );
 
   const copyToClipboard = (textToCopy) => {
@@ -651,7 +647,7 @@ const CreateSurveyPage = () => {
   return (
     <>
       {contextHolder}
-      {surveyActionButtons()}
+      {submitSurveyButton()}
 
       <Modal
         centered
@@ -700,8 +696,12 @@ const CreateSurveyPage = () => {
                 name="surveyTitle"
                 placeholder="Survey Title"
                 size="large"
-                variant="borderless"
-                style={{ fontWeight: "bold", fontSize: "1.5em" }}
+                variant="outlined"
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "1.5em",
+                  marginBottom: "8px",
+                }}
                 required
               />
 
@@ -710,7 +710,7 @@ const CreateSurveyPage = () => {
                 onChange={(e) => setSurveyDescription(e.target.value)}
                 name="surveyDescription"
                 placeholder="Enter a short survey description."
-                variant="borderless"
+                variant="outlined"
                 required
               />
             </Card>
@@ -725,14 +725,26 @@ const CreateSurveyPage = () => {
             />
 
             {questions.length > 0 ? (
-              <Card>
-                {questions.map((question) => getQuestionElement(question))}
-              </Card>
+              <>
+                <Card>
+                  {questions.map((question) => getQuestionElement(question))}
+                </Card>
+                <Button
+                  onClick={addQuestion}
+                  style={{ marginTop: "16px", marginBottom: "32px" }}
+                  icon={<PlusOutlined />}
+                  block
+                >
+                  Add new question
+                </Button>
+              </>
             ) : (
               <Flex
                 align="center"
                 justify="center"
                 flex={1}
+                gap={16}
+                vertical
                 style={{
                   color: "#bbbbbb",
                   fontSize: "1.2em",
@@ -741,6 +753,9 @@ const CreateSurveyPage = () => {
                 }}
               >
                 There are no questions yet.
+                <Button onClick={addQuestion} icon={<PlusOutlined />}>
+                  Add new question
+                </Button>
               </Flex>
             )}
           </Form>

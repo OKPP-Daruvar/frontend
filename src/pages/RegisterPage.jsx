@@ -1,9 +1,13 @@
-import { Col, Form, Input, Flex, Button, Card, Alert } from "antd";
+import { Col, Form, Input, Flex, Button, Card, Alert, message } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [isShowingPassword, setIsShowingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,6 +26,8 @@ const RegisterPage = () => {
       })
       .then((response) => {
         console.log(response);
+        message.success("Registration successful", 3);
+        navigate("/login");
       })
       .catch((error) => {
         console.log(error);
@@ -38,6 +44,8 @@ const RegisterPage = () => {
 
   return (
     <Flex align="center" justify="center" flex={1}>
+      {contextHolder}
+
       <Col span={8}>
         <Card title="Register">
           <Form

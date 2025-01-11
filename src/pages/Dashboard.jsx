@@ -440,7 +440,9 @@ const Dashboard = () => {
               >
                 Your Surveys
               </h1>
-              <Link to="/survey/new">New survey</Link>
+              <Button variant="outlined">
+                <Link to="/survey/new">New survey</Link>
+              </Button>
             </Row>
             <List
               itemLayout="horizontal"
